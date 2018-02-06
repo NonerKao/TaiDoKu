@@ -2,12 +2,22 @@ package main
 
 import (
 	tdk "github.com/NonerKao/TaiDoKu/TaiDoKu"
+	"os"
 )
 
 func main() {
-	p := tdk.InitRandProgram()
+	var p *tdk.TDKProgram
+	if len(os.Args) != 1 {
+		p = tdk.InitProgram(os.Args[1])
+	} else {
+		p = tdk.InitRandProgram()
+	}
 
 	p.Tile[0].Print()
-	p.Tile[0].Refine(0, 0)
+	op := p.Tile[0].OPLookup()
+	p.Tile[0].Print()
+	p.Tile[0].Execute(op)
+	p.Tile[0].Print()
+	p.Tile[0].Refine()
 	p.Tile[0].Print()
 }
