@@ -69,8 +69,8 @@ func putHex(h uint8) {
 func (t *Tile) Execute(op TDK_OP) {
 	x := t.a[(t.IP.x+(t.IP.y+1)/16)%16][(t.IP.y+1)%16] % 16
 	y := t.a[(t.IP.x+(t.IP.y+2)/16)%16][(t.IP.y+2)%16] % 16
-	op3 := t.a[(t.IP.x+(y+3)/16)%16][(t.IP.y+3)%16] % 16
-	op4 := t.a[(t.IP.x+(y+4)/16)%16][(t.IP.y+4)%16] % 16
+	op3 := t.a[(t.IP.x+(t.IP.y+3)/16)%16][(t.IP.y+3)%16] % 16
+	op4 := t.a[(t.IP.x+(t.IP.y+4)/16)%16][(t.IP.y+4)%16] % 16
 	switch op {
 	case OP_IN:
 		t.a[x][y] = getHex()
