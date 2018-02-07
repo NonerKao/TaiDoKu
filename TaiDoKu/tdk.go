@@ -36,6 +36,7 @@ func InitProgram(fn string) *TDKProgram {
 				x:    0,
 				y:    0,
 			}
+			fmt.Fscanf(f, "%X %X", &ip.x, &ip.y)
 			tdk.IP = append(tdk.IP, &ip)
 			ip.Tile = tdk.Tile[k]
 			tdk.Tile[k].IP = &ip

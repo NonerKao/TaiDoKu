@@ -67,10 +67,10 @@ func putHex(h uint8) {
 }
 
 func (t *Tile) Execute(op TDK_OP) {
-	x := t.a[(t.IP.x+(t.IP.y+1)/16)%16][(t.IP.y+1)%16]
-	y := t.a[(t.IP.x+(t.IP.y+2)/16)%16][(t.IP.y+2)%16]
-	op3 := t.a[(t.IP.x+(y+3)/16)%16][(t.IP.y+3)%16]
-	op4 := t.a[(t.IP.x+(y+4)/16)%16][(t.IP.y+4)%16]
+	x := t.a[(t.IP.x+(t.IP.y+1)/16)%16][(t.IP.y+1)%16] % 16
+	y := t.a[(t.IP.x+(t.IP.y+2)/16)%16][(t.IP.y+2)%16] % 16
+	op3 := t.a[(t.IP.x+(y+3)/16)%16][(t.IP.y+3)%16] % 16
+	op4 := t.a[(t.IP.x+(y+4)/16)%16][(t.IP.y+4)%16] % 16
 	switch op {
 	case OP_IN:
 		t.a[x][y] = getHex()
@@ -79,7 +79,7 @@ func (t *Tile) Execute(op TDK_OP) {
 	case OP_SV:
 		t.a[x][y] = op3
 	case OP_LD:
-		t.a[(t.IP.x+(y+4)/16)%16][(t.IP.y+4)%16] = t.a[x][y]
+		t.a[(t.IP.x+(y+3)/16)%16][(t.IP.y+3)%16] = t.a[x][y]
 	case OP_JMP:
 		t.IP.x = x
 		t.IP.y = y
@@ -109,7 +109,7 @@ func (t *Tile) Execute(op TDK_OP) {
 	case OP_XOR:
 		t.a[x][y] = op3 ^ op4
 	case OP_SHL:
-		t.a[x][y] = t.a[x][y] << (op3 % 4)
+		t.a[x][y] = (t.a[x][y] << (op3 % 4)) % 16
 	case OP_SHRL:
 		t.a[x][y] = t.a[x][y] >> (op3 % 4)
 	case OP_SHRA:
@@ -127,7 +127,6 @@ func (t *Tile) Execute(op TDK_OP) {
 		meta3 := t.a[(t.IP.x+(t.IP.y+3)/16)%16][(t.IP.y+3)%16]
 		meta(t, metaOP, meta1, meta2, meta3)
 	}
-
 }
 
 func meta(t *Tile, op, arg1, arg2, arg3 uint8) {
