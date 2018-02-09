@@ -17,20 +17,35 @@ type IP struct {
 }
 
 type Tile struct {
-	IP *IP
-	a  [16][16]uint8
+	IP       *IP
+	neighbor [2]*Tile
+	a        [16][16]uint8
 }
 
-func Rand() *Tile {
-	var t Tile
+func NewRand(dup, upper, lower *Tile) *Tile {
+	var nt Tile
 	rand.Seed(time.Now().UnixNano())
 	for i := 0; i < 16; i += 1 {
 		for j := 0; j < 16; j += 1 {
-			t.a[i][j] = uint8(rand.Int() % 16)
+			if dup == nil {
+				nt.a[i][j] = uint8(rand.Int() % 16)
+			} else {
+				nt.a[i][j] = dup.a[i][j]
+			}
 		}
 	}
 
-	return &t
+	if upper != nil {
+		nt.neighbor[0] = upper
+		nt.neighbor[1] = lower
+		upper.neighbor[1] = &nt
+		lower.neighbor[0] = &nt
+	} else {
+		nt.neighbor[0] = &nt
+		nt.neighbor[1] = &nt
+	}
+
+	return &nt
 }
 
 func (t *Tile) Print() {

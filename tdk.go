@@ -26,7 +26,7 @@ func InitProgram(fn string) *TDKProgram {
 	}
 
 	for k := 0; k < int(nt); k++ {
-		tdk.Tile[k] = Rand()
+		tdk.Tile[k] = NewRand(nil, nil, nil)
 
 		var hasip int
 		fmt.Fscan(f, &hasip)
@@ -58,7 +58,7 @@ func InitRandProgram() *TDKProgram {
 		IP:   make([]*IP, 1),
 	}
 	ip := IP{
-		Tile: Rand(),
+		Tile: NewRand(nil, nil, nil),
 		x:    0,
 		y:    0,
 	}

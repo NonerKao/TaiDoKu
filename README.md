@@ -17,16 +17,16 @@ This project is the first (and might be the only) implementation of TaiDoKu in G
 * Execution
 * Refinement
 
-and a few utilties for this language, hopefully:
+and a few utilities for this language, hopefully:
 
 * Interpreter
 * Wrapper for animation
 * Visual debugger
-* Program miner (you known, itis very hard to program in such esolang)
+* Program miner (you known, it is very hard to program in such esolang)
 * COMPILER
 * etc.
 
-Licencing                                                
+Licensing
 =========                                                
                                                          
 TaiDoKu is licensed as public domain.

@@ -269,3 +269,154 @@ func TestExecute_ALU2(t *testing.T) {
 	}
 	t.Log("Execute() OP_SHRA.")
 }
+
+func TestExecute_META_MOVE(t *testing.T) {
+	var tile1 Tile
+	var tile2 Tile
+
+	tile1.IP = new(IP)
+	tile1.IP.x = 6
+	tile1.IP.y = 1
+	tile1.a[6][2] = uint8(META_MOVE)
+	tile1.a[6][3] = 13
+	tile1.a[6][4] = 1
+	tile1.a[6][5] = 3
+	tile1.a[1][3] = 15
+
+	tile2.IP = nil
+	tile1.neighbor[1] = &tile2
+	tile1.Execute(OP_META)
+
+	if tile2.IP == nil || tile1.IP != nil {
+		t.Errorf("Execute() META_MOVE failed.")
+	}
+	t.Log("Execute() META_MOVE.")
+}
+
+func TestExecute_META_NEW_DELETE(t *testing.T) {
+	tile1 := new(Tile)
+
+	ip := new(IP)
+	tile1.IP = ip
+	ip.Tile = tile1
+	tile1.IP.x = 5
+	tile1.IP.y = 10
+	tile1.a[5][11] = uint8(META_NEW_RAND)
+	tile1.a[5][12] = 11
+
+	tile2 := NewRand(nil, tile1, tile1)
+	tile3 := NewRand(nil, tile1, tile2)
+	ip.Execute(OP_META)
+
+	if tile1.neighbor[1].neighbor[1] != tile3 || tile3.neighbor[0].neighbor[0] != tile1 {
+		t.Errorf("Execute() META_NEW_RAND failed.")
+	}
+	t.Log("Execute() META_NEW_RAND.")
+
+	ip.Tile.a[5][11] = uint8(META_MOVE)
+	ip.Tile.a[5][12] = 8
+	ip.Tile.a[5][13] = 5
+	ip.Tile.a[5][14] = 10
+	ip.Execute(OP_META)
+	ip.Tile.a[5][11] = uint8(META_DELETE)
+	ip.Tile.a[5][12] = 7
+	ip.Execute(OP_META)
+	if ip.Tile != tile2 {
+		t.Errorf("Execute() META_DELETE failed.")
+	}
+	t.Log("Execute() META_DELETE.")
+}
+
+func TestExecute_META_NEW_DUP(t *testing.T) {
+	tile1 := new(Tile)
+
+	tile1.IP = new(IP)
+	tile1.IP.x = 3
+	tile1.IP.y = 8
+	tile1.a[3][9] = uint8(META_NEW_DUP)
+	tile1.a[3][10] = 2
+
+	var tile2 *Tile
+	tile2 = NewRand(tile1, tile1, tile1)
+	tile1.Execute(OP_META)
+
+	if tile2.a[3][10] != 2 || tile1.neighbor[1] != tile2 {
+		t.Errorf("Execute() META_NEW_DUP failed: %X.", tile2.a[3][10])
+	}
+	t.Log("Execute() META_NEW_DUP.")
+}
+
+func TestExecute_META_SHUFFLE(t *testing.T) {
+	tile1 := new(Tile)
+
+	tile1.IP = new(IP)
+	tile1.IP.x = 3
+	tile1.IP.y = 8
+	tile1.a[3][9] = uint8(META_SHUFFLE)
+	tile1.a[3][10] = 2
+	tile1.a[3][11] = 3
+
+	tile1.Execute(OP_META)
+
+	if tile1.a[3][10] != 3 || tile1.a[3][11] != 2 {
+		t.Errorf("Execute() META_SHUFFLE failed: %X, %X.", tile1.a[3][10], tile1.a[3][11])
+	}
+	t.Log("Execute() META_SHUFFLE.")
+}
+
+func TestExecute_META_COPY(t *testing.T) {
+	ip := new(IP)
+	tile1 := new(Tile)
+
+	ip.Tile = tile1
+	tile1.IP = ip
+	tile1.IP.x = 5
+	tile1.IP.y = 10
+	tile1.a[5][11] = uint8(META_COPY)
+	// from top, region 2
+	tile1.a[5][12] = 6
+	tile1.a[5][13] = 2
+
+	tile2 := NewRand(nil, tile1, tile1)
+	tile3 := NewRand(nil, tile2, tile1)
+	tile3.a[0][8] = 15
+	tile3.a[0][11] = 3
+	tile3.a[3][11] = 2
+	ip.Execute(OP_META)
+
+	if tile1.a[0][8] != 15 || tile1.a[0][11] != 3 || tile1.a[3][11] != 2 {
+		t.Errorf("Execute() META_COPY FROM %X,%X,%X.", tile1.a[0][8], tile1.a[0][11], tile1.a[3][11])
+	}
+	t.Log("Execute() META_COPY FROM.")
+
+	tile1.a[5][11] = uint8(META_COPY)
+	// to bottom, row 13
+	tile1.a[5][12] = 13
+	tile1.a[5][13] = 13
+	tile1.a[13][4] = 15
+	tile1.a[13][7] = 3
+	tile1.a[13][11] = 2
+	ip.Execute(OP_META)
+
+	if tile2.a[13][4] != 15 || tile2.a[13][7] != 3 || tile2.a[13][11] != 2 {
+		t.Errorf("Execute() META_COPY TO %X,%X,%X.", tile2.a[13][4], tile2.a[13][7], tile2.a[13][11])
+	}
+	t.Log("Execute() META_COPY TO.")
+}
+
+func TestExecute_META_HALT(t *testing.T) {
+	ip := new(IP)
+	tile := new(Tile)
+
+	ip.Tile = tile
+	tile.IP = ip
+	tile.IP.x = 4
+	tile.IP.y = 6
+	tile.a[4][7] = uint8(META_HALT)
+	ip.Execute(OP_META)
+
+	if tile.IP != nil || ip.Tile != nil {
+		t.Errorf("Execute() META_HALT.")
+	}
+	t.Log("Execute() META_HALT.")
+}

@@ -30,17 +30,15 @@ const (
 type TDK_META_OP uint8
 
 const (
-	META_MOVE      TDK_META_OP = 0
-	META_NEW_RAND  TDK_META_OP = 1
-	META_NEW_DUP   TDK_META_OP = 2
-	META_DELETE    TDK_META_OP = 3
-	META_FORK      TDK_META_OP = 4
-	META_JOIN      TDK_META_OP = 5
-	META_SYNC      TDK_META_OP = 6
-	META_SHUFFLE   TDK_META_OP = 7
-	META_COPY_FROM TDK_META_OP = 8
-	META_COPY_TO   TDK_META_OP = 9
-	META_HALT      TDK_META_OP = 15
+	META_MOVE     TDK_META_OP = 0
+	META_NEW_RAND TDK_META_OP = 1
+	META_NEW_DUP  TDK_META_OP = 2
+	META_DELETE   TDK_META_OP = 3
+	META_FORK     TDK_META_OP = 4
+	META_SYNC     TDK_META_OP = 5
+	META_SHUFFLE  TDK_META_OP = 6
+	META_COPY     TDK_META_OP = 7
+	META_HALT     TDK_META_OP = 15
 )
 
 func getHex() uint8 {
@@ -64,6 +62,13 @@ func putHex(h uint8) {
 	} else {
 		fmt.Printf("%c", h-10+uint8('A'))
 	}
+}
+
+func (ip *IP) Execute(op TDK_OP) {
+	if ip.Tile == nil {
+		panic("IP points to no tile.")
+	}
+	ip.Tile.Execute(op)
 }
 
 func (t *Tile) Execute(op TDK_OP) {
@@ -122,12 +127,88 @@ func (t *Tile) Execute(op TDK_OP) {
 		}
 	case OP_META:
 		metaOP := x
-		meta1 := t.a[(t.IP.x+(t.IP.y+1)/16)%16][(t.IP.y+1)%16]
-		meta2 := t.a[(t.IP.x+(t.IP.y+2)/16)%16][(t.IP.y+2)%16]
-		meta3 := t.a[(t.IP.x+(t.IP.y+3)/16)%16][(t.IP.y+3)%16]
-		meta(t, metaOP, meta1, meta2, meta3)
+		meta1 := y
+		meta2 := op3
+		meta3 := op4
+		t.meta(TDK_META_OP(metaOP), meta1, meta2, meta3)
+	default:
+		panic("Illegal operation.")
 	}
 }
 
-func meta(t *Tile, op, arg1, arg2, arg3 uint8) {
+func (t *Tile) meta(op TDK_META_OP, arg1, arg2, arg3 uint8) {
+	switch op {
+	case META_MOVE:
+		t.move(arg1, arg2, arg3)
+	case META_NEW_RAND:
+		if arg1%2 == 0 {
+			NewRand(nil, t.neighbor[0], t)
+		} else {
+			NewRand(nil, t, t.neighbor[1])
+		}
+	case META_NEW_DUP:
+		if arg1%2 == 0 {
+			NewRand(t, t.neighbor[0], t)
+		} else {
+			NewRand(t, t, t.neighbor[1])
+		}
+	case META_DELETE:
+		if arg1%2 == 0 {
+			t.neighbor[0].neighbor[0].neighbor[1] = t
+			t.neighbor[0] = t.neighbor[0].neighbor[0]
+		} else {
+			t.neighbor[1].neighbor[1].neighbor[0] = t
+			t.neighbor[1] = t.neighbor[1].neighbor[1]
+		}
+	case META_SHUFFLE:
+		for i := 0; i < 16; i++ {
+			for j := 0; j < 16; j++ {
+				if t.a[i][j]%16 == arg1 {
+					t.a[i][j] = (t.a[i][j] & 240) | arg2
+				} else if t.a[i][j]%16 == arg2 {
+					t.a[i][j] = (t.a[i][j] & 240) | arg1
+				}
+			}
+		}
+	case META_COPY:
+		var xs, xe uint8
+		var ys, ye uint8
+		switch arg1 & 6 {
+		case 2:
+			xs = 0
+			xe = 16
+			ys = arg2
+			ye = arg2 + 1
+		case 4:
+			xs = arg2
+			xe = arg2 + 1
+			ys = 0
+			ye = 16
+		case 6:
+			xs = arg2 / 4 * 4
+			xe = xs + 4
+			ys = (arg2 % 4) * 4
+			ye = ys + 4
+		}
+		for i := xs; i < xe; i++ {
+			for j := ys; j < ye; j++ {
+				if arg1&8 == 0 {
+					t.a[i][j] = t.neighbor[arg1%2].a[i][j]
+				} else {
+					t.neighbor[arg1%2].a[i][j] = t.a[i][j]
+				}
+			}
+		}
+	case META_HALT:
+		t.IP.Tile = nil
+		t.IP = nil
+	}
+}
+
+func (t *Tile) move(d, x, y uint8) {
+	t.IP.Tile = t.neighbor[d%2]
+	t.IP.Tile.IP = t.IP
+	t.IP.x = x
+	t.IP.y = y
+	t.IP = nil
 }
