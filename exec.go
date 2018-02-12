@@ -68,6 +68,8 @@ func (ip *IP) Execute(op TDK_OP) {
 	if ip.Tile == nil {
 		panic("IP points to no tile.")
 	}
+	fmt.Println(op, "at", ip.x, ip.y)
+	ip.Tile.Print()
 	ip.Tile.Execute(op)
 }
 
@@ -137,8 +139,10 @@ func (t *Tile) Execute(op TDK_OP) {
 }
 
 func (t *Tile) meta(op TDK_META_OP, arg1, arg2, arg3 uint8) {
+	fmt.Println("META:", op)
 	switch op {
 	case META_MOVE:
+
 		t.move(arg1, arg2, arg3)
 	case META_NEW_RAND:
 		if arg1%2 == 0 {
@@ -153,13 +157,11 @@ func (t *Tile) meta(op TDK_META_OP, arg1, arg2, arg3 uint8) {
 			NewRand(t, t, t.neighbor[1])
 		}
 	case META_DELETE:
-		if arg1%2 == 0 {
-			t.neighbor[0].neighbor[0].neighbor[1] = t
-			t.neighbor[0] = t.neighbor[0].neighbor[0]
-		} else {
-			t.neighbor[1].neighbor[1].neighbor[0] = t
-			t.neighbor[1] = t.neighbor[1].neighbor[1]
+		if t.neighbor[0] == t {
+			panic("tile deletes itself!")
 		}
+		t.neighbor[arg1%2].neighbor[arg1%2].neighbor[1-arg1%2] = t
+		t.neighbor[arg1%2] = t.neighbor[arg1%2].neighbor[arg1%2]
 	case META_SHUFFLE:
 		for i := 0; i < 16; i++ {
 			for j := 0; j < 16; j++ {
@@ -200,8 +202,7 @@ func (t *Tile) meta(op TDK_META_OP, arg1, arg2, arg3 uint8) {
 			}
 		}
 	case META_HALT:
-		t.IP.Tile = nil
-		t.IP = nil
+		t.IP.State = IP_HALT
 	}
 }
 

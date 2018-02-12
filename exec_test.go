@@ -415,7 +415,7 @@ func TestExecute_META_HALT(t *testing.T) {
 	tile.a[4][7] = uint8(META_HALT)
 	ip.Execute(OP_META)
 
-	if tile.IP != nil || ip.Tile != nil {
+	if ip.State != IP_HALT {
 		t.Errorf("Execute() META_HALT.")
 	}
 	t.Log("Execute() META_HALT.")

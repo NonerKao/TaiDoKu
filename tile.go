@@ -11,9 +11,13 @@ import (
 var text = []string{`０`, `１`, `２`, `３`, `４`, `５`, `６`, `７`, `８`, `９`, `Ａ`, `Ｂ`, `Ｃ`, `Ｄ`, `Ｅ`, `Ｆ`}
 
 type IP struct {
-	Tile *Tile
-	x    uint8
-	y    uint8
+	State   IP_STATE
+	Tile    *Tile
+	x       uint8
+	y       uint8
+	Partner int
+	Token   int
+	Ch      chan bool
 }
 
 type Tile struct {
@@ -55,12 +59,18 @@ func (t *Tile) Print() {
 
 	fix := color.New(color.FgYellow, color.Bold)
 	nf := color.New(color.Bold)
+	ip := color.New(color.BgWhite, color.FgRed, color.Bold)
+
+	t.a[t.IP.x][t.IP.y] += 32
 
 	fmt.Print(top)
 	for i := 0; i < 16; i += 1 {
 		fmt.Print(`║`)
 		for j := 0; j < 16; j += 1 {
-			if t.a[i][j] >= 16 {
+			if t.a[i][j] >= 32 {
+				ip.Print(text[t.a[i][j]-32])
+				t.a[t.IP.x][t.IP.y] -= 32
+			} else if t.a[i][j] >= 16 {
 				fix.Print(text[t.a[i][j]-16])
 			} else {
 				nf.Print(text[t.a[i][j]])

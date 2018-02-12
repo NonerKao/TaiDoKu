@@ -1,5 +1,9 @@
 package tdk
 
+func (ip *IP) Refine() {
+	ip.Tile.Refine()
+}
+
 // Refine refine the tile according to the value of t.a[x][y]
 func (t *Tile) Refine() {
 	norm := []uint8{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}

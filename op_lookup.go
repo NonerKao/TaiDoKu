@@ -15,6 +15,10 @@ package tdk
 var routeMapX = [16]uint8{14, 0, 2, 15, 0, 1, 14, 15, 1, 2, 15, 0, 1, 14, 0, 2}
 var routeMapY = [16]uint8{14, 14, 14, 15, 15, 15, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2}
 
+func (ip *IP) OPLookup() TDK_OP {
+	return ip.Tile.OPLookup()
+}
+
 //find the operation to be executed in current cycle
 func (t *Tile) OPLookup() TDK_OP {
 	var visited [16]uint8
