@@ -107,8 +107,6 @@ func (tdk *TDKProgram) Run() {
 
 			ip.Tile.IP = nil
 			ip.Tile = nil
-
-			fmt.Println(len(tdk.IP))
 		}
 		ack <- true
 	}

@@ -68,8 +68,7 @@ func (ip *IP) Execute(op TDK_OP) {
 	if ip.Tile == nil {
 		panic("IP points to no tile.")
 	}
-	fmt.Println(op, "at", ip.x, ip.y)
-	ip.Tile.Print()
+	//fmt.Println(op, "at", ip.x, ip.y)
 	ip.Tile.Execute(op)
 }
 
@@ -139,7 +138,7 @@ func (t *Tile) Execute(op TDK_OP) {
 }
 
 func (t *Tile) meta(op TDK_META_OP, arg1, arg2, arg3 uint8) {
-	fmt.Println("META:", op)
+	//fmt.Println("META:", op)
 	switch op {
 	case META_MOVE:
 
@@ -201,6 +200,8 @@ func (t *Tile) meta(op TDK_META_OP, arg1, arg2, arg3 uint8) {
 				}
 			}
 		}
+	case META_SYNC:
+		t.IP.State = IP_SYNC
 	case META_HALT:
 		t.IP.State = IP_HALT
 	}
